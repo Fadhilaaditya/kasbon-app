@@ -142,9 +142,18 @@ export default function DashboardPage() {
         <DebtModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onSuccess={fetchDebts}
+          onSuccess={() => fetchDebts(true)}
           debtToEdit={debtToEdit}
         />
+
+        {/* Mobile Floating Action Button (FAB) */}
+        <button
+          onClick={handleOpenAddModal}
+          className="sm:hidden fixed bottom-6 right-6 z-40 p-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-2xl shadow-emerald-500/40 active:scale-90 transition-all duration-200 border border-emerald-300/40 flex items-center justify-center"
+          title="Catat Transaksi Baru"
+        >
+          <PlusCircle className="w-6 h-6 stroke-[2.5]" />
+        </button>
       </main>
     </div>
   );

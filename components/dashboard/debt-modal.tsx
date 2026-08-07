@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Debt, DebtType } from '@/lib/validations/debt';
 import { formatRupiah, parseRupiahInput } from '@/lib/utils/currency';
 import { X, PlusCircle, Edit3, Loader2, AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/toast';
 
 interface DebtModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export default function DebtModal({
   onSuccess,
   debtToEdit = null,
 }: DebtModalProps) {
+  const { showToast } = useToast();
   const isEditing = Boolean(debtToEdit);
 
   const [type, setType] = useState<DebtType>('owed_to_me');
@@ -107,6 +109,12 @@ export default function DebtModal({
         return;
       }
 
+      showToast(
+        isEditing
+          ? 'Perubahan transaksi berhasil disimpan!'
+          : 'Transaksi baru berhasil dicatat!',
+        'success'
+      );
       setIsSubmitting(false);
       onSuccess();
       onClose();
@@ -119,55 +127,51 @@ export default function DebtModal({
   const currentNumeric = parseInt(amountInput, 10) || 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl relative">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition-colors"
+          className="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 text-slate-400 hover:text-white p-1.5 rounded-full hover:bg-slate-800 transition-colors z-10"
+          title="Tutup Modal"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
-        {/* Modal Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl">
+        {/* Compact Modal Header */}
+        <div className="flex items-center gap-2.5 mb-3 pr-8">
+          <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl shrink-0">
             {isEditing ? (
-              <Edit3 className="w-6 h-6 stroke-[2.5]" />
+              <Edit3 className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             ) : (
-              <PlusCircle className="w-6 h-6 stroke-[2.5]" />
+              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             )}
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight leading-tight">
               {isEditing ? 'Edit Transaksi' : 'Catat Transaksi Baru'}
             </h2>
-            <p className="text-xs text-slate-400">
-              {isEditing
-                ? 'Perbarui rincian transaksi utang/piutang ini'
-                : 'Isi formulir di bawah untuk menambahkan catatan baru'}
-            </p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-5 p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-start gap-3 text-rose-400 text-sm">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="mb-3 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-start gap-2 text-rose-400 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Tipe (Radio Toggle) */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">
               Tipe Transaksi
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <label
-                className={`flex flex-col items-center justify-center p-3 rounded-2xl border cursor-pointer transition-all ${
+                className={`flex items-center justify-center py-2 px-3 rounded-xl border cursor-pointer transition-all ${
                   type === 'owed_to_me'
-                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-400 font-bold shadow-lg shadow-emerald-500/10'
+                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-400 font-bold shadow-md shadow-emerald-500/10'
                     : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
                 }`}
               >
@@ -179,14 +183,11 @@ export default function DebtModal({
                   onChange={() => setType('owed_to_me')}
                   className="sr-only"
                 />
-                <span className="text-sm">Saya Dihutang</span>
-                <span className="text-[10px] text-slate-400 font-normal mt-0.5">
-                  (Orang lain utang ke saya)
-                </span>
+                <span className="text-xs">Saya Dihutang</span>
               </label>
 
               <label
-                className={`flex flex-col items-center justify-center p-3 rounded-2xl border cursor-pointer transition-all ${
+                className={`flex items-center justify-center py-2 px-3 rounded-xl border cursor-pointer transition-all ${
                   type === 'i_owe'
                     ? 'bg-rose-500/15 border-rose-500 text-rose-400 font-bold shadow-lg shadow-rose-500/10'
                     : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
@@ -200,17 +201,14 @@ export default function DebtModal({
                   onChange={() => setType('i_owe')}
                   className="sr-only"
                 />
-                <span className="text-sm">Saya Hutang</span>
-                <span className="text-[10px] text-slate-400 font-normal mt-0.5">
-                  (Saya utang ke orang lain)
-                </span>
+                <span className="text-xs">Saya Hutang</span>
               </label>
             </div>
           </div>
 
           {/* Nama Orang */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">
               Nama Orang <span className="text-rose-400">*</span>
             </label>
             <input
@@ -219,51 +217,53 @@ export default function DebtModal({
               value={counterpartName}
               onChange={(e) => setCounterpartName(e.target.value)}
               placeholder="Contoh: Budi Santoso"
-              className="w-full bg-slate-950/60 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-2.5 px-4 text-white text-sm placeholder:text-slate-600 transition-colors"
+              className="w-full bg-slate-950/60 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-2 px-3 text-white text-xs sm:text-sm placeholder:text-slate-600 transition-colors"
             />
           </div>
 
           {/* Jumlah (Rupiah) */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Jumlah (Rupiah) <span className="text-rose-400">*</span>
-            </label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+                Jumlah (Rupiah) <span className="text-rose-400">*</span>
+              </label>
+              {currentNumeric > 0 && (
+                <span className="text-[11px] text-emerald-400 font-bold">
+                  {formatRupiah(currentNumeric)}
+                </span>
+              )}
+            </div>
             <input
               type="text"
               required
               value={amountInput}
               onChange={handleAmountChange}
               placeholder="Contoh: 150000"
-              className="w-full bg-slate-950/60 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-2.5 px-4 text-white text-sm placeholder:text-slate-600 transition-colors"
+              className="w-full bg-slate-950/60 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-2 px-3 text-white text-xs sm:text-sm placeholder:text-slate-600 transition-colors"
             />
-            {currentNumeric > 0 && (
-              <p className="text-xs text-emerald-400 mt-1.5 font-semibold">
-                Preview: {formatRupiah(currentNumeric)}
-              </p>
-            )}
           </div>
 
           {/* Tanggal */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">
               Tanggal Transaksi
             </label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full bg-slate-950/60 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-2.5 px-4 text-white text-sm transition-colors"
+              className="w-full bg-slate-950/60 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-2 px-3 text-white text-xs sm:text-sm transition-colors"
             />
           </div>
 
           {/* Catatan (Optional) */}
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
                 Catatan (Opsional)
               </label>
               <span className="text-[10px] text-slate-500">
-                {note.length}/200 char
+                {note.length}/200
               </span>
             </div>
             <textarea
@@ -271,28 +271,28 @@ export default function DebtModal({
               maxLength={200}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Contoh: Patungan makan siang di warung kopi"
-              className="w-full bg-slate-950/60 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-2.5 px-4 text-white text-sm placeholder:text-slate-600 transition-colors resize-none"
+              placeholder="Contoh: Patungan makan siang"
+              className="w-full bg-slate-950/60 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-2 px-3 text-white text-xs sm:text-sm placeholder:text-slate-600 transition-colors resize-none"
             />
           </div>
 
           {/* Submit Button */}
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-2.5 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+              className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 px-3 rounded-xl transition-colors text-xs sm:text-sm"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50 text-sm"
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold py-2.5 px-3 rounded-xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 text-xs sm:text-sm"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   <span>Menyimpan...</span>
                 </>
               ) : (

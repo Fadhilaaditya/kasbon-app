@@ -19,6 +19,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
+import { useToast } from '@/components/ui/toast';
+
 interface DebtListProps {
   debts: Debt[];
   isLoading: boolean;
@@ -32,6 +34,8 @@ export default function DebtList({
   onRefresh,
   onEdit,
 }: DebtListProps) {
+  const { showToast } = useToast();
+
   // Filter & Search states
   const [statusFilter, setStatusFilter] = useState<'all' | 'unsettled' | 'settled'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | DebtType>('all');
@@ -65,7 +69,7 @@ export default function DebtList({
     }
   );
 
-  // Toggle status (Lunas / Belum Lunas) with Optimistic UI
+  // Toggle status (Lunas / Belum Lunas) with Optimistic UI & Toast
   const handleToggleStatus = async (debt: Debt) => {
     const isCurrentlySettled = Boolean(debt.settled_at);
 
@@ -73,6 +77,9 @@ export default function DebtList({
     startTransition(() => {
       setOptimisticDebts({ type: 'toggle', id: debt.id });
     });
+
+    const newStatusText = !isCurrentlySettled ? 'Lunas' : 'Belum Lunas';
+    showToast(`Status pelunasan ${debt.counterpart_name} diubah ke ${newStatusText}`, 'success');
 
     try {
       const res = await fetch(`/api/debts/${debt.id}`, {
@@ -82,19 +89,19 @@ export default function DebtList({
       });
 
       if (res.ok) {
-        onRefresh(true); // Silent background revalidation without skeleton flicker!
+        onRefresh(true);
       } else {
         const data = await res.json();
-        alert(data.error || 'Gagal mengubah status pelunasan.');
-        onRefresh(false); // Rollback if error
+        showToast(data.error || 'Gagal mengubah status pelunasan.', 'error');
+        onRefresh(false); // Rollback
       }
     } catch {
-      alert('Terjadi kesalahan jaringan.');
-      onRefresh(false); // Rollback if error
+      showToast('Terjadi kesalahan jaringan.', 'error');
+      onRefresh(false); // Rollback
     }
   };
 
-  // Delete transaction with Optimistic UI
+  // Delete transaction with Optimistic UI & Toast
   const handleDelete = async (id: string) => {
     setActionLoadingId(id);
 
@@ -103,21 +110,23 @@ export default function DebtList({
       setOptimisticDebts({ type: 'delete', id });
     });
 
+    showToast('Catatan transaksi berhasil dihapus', 'info');
+
     try {
       const res = await fetch(`/api/debts/${id}`, {
         method: 'DELETE',
       });
 
       if (res.ok) {
-        onRefresh(true); // Silent background revalidation!
+        onRefresh(true);
       } else {
         const data = await res.json();
-        alert(data.error || 'Gagal menghapus transaksi.');
-        onRefresh(false); // Rollback if error
+        showToast(data.error || 'Gagal menghapus transaksi.', 'error');
+        onRefresh(false);
       }
     } catch {
-      alert('Terjadi kesalahan jaringan.');
-      onRefresh(false); // Rollback if error
+      showToast('Terjadi kesalahan jaringan.', 'error');
+      onRefresh(false);
     } finally {
       setActionLoadingId(null);
       setDeletingId(null);
@@ -473,10 +482,10 @@ function DebtItemRow({
       </div>
 
       {/* Right Actions & Amount */}
-      <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
-        <div className="text-left sm:text-right">
+      <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 sm:gap-4 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-800/60 shrink-0">
+        <div className="text-left sm:text-right shrink-0">
           <div
-            className={`text-base sm:text-lg font-extrabold tracking-tight ${
+            className={`text-sm sm:text-lg font-extrabold tracking-tight whitespace-nowrap ${
               isOwedToMe ? 'text-emerald-400' : 'text-rose-400'
             }`}
           >
@@ -485,12 +494,12 @@ function DebtItemRow({
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Toggle Lunas Button */}
           <button
             onClick={() => onToggleStatus(debt)}
             disabled={isLoading}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+            className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
               isSettled
                 ? 'bg-amber-500/10 text-amber-300 border-amber-500/20 hover:bg-amber-500/20'
                 : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25'
@@ -498,16 +507,16 @@ function DebtItemRow({
             title={isSettled ? 'Tandai sebagai belum lunas' : 'Tandai sebagai lunas'}
           >
             {isLoading ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
             ) : isSettled ? (
               <>
-                <XCircle className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Batal Lunas</span>
+                <XCircle className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Batal Lunas</span>
               </>
             ) : (
               <>
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Tandai Lunas</span>
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Tandai Lunas</span>
               </>
             )}
           </button>
@@ -516,20 +525,20 @@ function DebtItemRow({
           <button
             onClick={() => onEdit(debt)}
             disabled={isLoading}
-            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl transition-colors shrink-0"
             title="Edit transaksi"
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit2 className="w-4 h-4 shrink-0" />
           </button>
 
           {/* Delete Button */}
           <button
             onClick={() => onDeleteClick(debt.id)}
             disabled={isLoading}
-            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-xl transition-colors"
+            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-xl transition-colors shrink-0"
             title="Hapus transaksi"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-4 h-4 shrink-0" />
           </button>
         </div>
       </div>
