@@ -42,7 +42,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# agent rules
+# agent & doc rules
 AGENTS.md
 CLAUDE.md
+PRD.md
 
