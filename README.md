@@ -80,7 +80,7 @@ Buka browser di `http://localhost:3000`.
 ---
 
 ## 🌐 Link Demo Deployment
-- **Vercel Live Demo:** [https://kasbon-app.vercel.app](https://kasbon-app.vercel.app) *(Silakan sesuaikan URL live)*
+- **Vercel Live Demo:** [https://kasbonku.vercel.app/login](https://kasbonku.vercel.app/login)
 
 ---
 
@@ -97,4 +97,4 @@ Salah satu keputusan teknis terbaik dalam arsitektur aplikasi ini adalah pengint
 ---
 
 ## ⏱️ Time Spent
-- **Total Waktu Pengerjaan:** ~4.5 jam (Perancangan PRD & Arsitektur: 45m, Migration & Auth: 1j, API & Validasi: 1j, UI Dashboard & Responsive Components: 1.5j, Polish & Docs: 30m).
+- **Total Waktu Pengerjaan:** ~6 jam (Perancangan PRD & Arsitektur: 2.5 jam / 2-3 jam, Migration & Auth: 1j, API & Validasi: 1j, UI Dashboard & Responsive Components: 1.5j, Polish & Docs: 30m).
